@@ -2,125 +2,191 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tool Tài Xỉu Tích Hợp - UI/UX Pro & Logic Dark Mới</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tool Tài Xỉu Tích Hợp - Pro Neon Dark</title>
     <style>
+        /* --- RESET TỔNG THỂ --- */
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #000;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #09090b; 
         }
         
-        /* iframe full màn hình */
         #game-frame {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 1;
         }
         
-        /* Nút gọi tool khi bị ẩn */
+        /* --- NÚT GỌI TOOL KHI BỊ ẨN --- */
         #toggle-tool-btn {
-            position: absolute; bottom: 25px; right: 25px; z-index: 9998;
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.5); padding: 12px 24px;
-            border-radius: 50px; font-weight: 600; cursor: pointer;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); transition: all 0.3s ease;
-            letter-spacing: 1px;
+            position: absolute; bottom: 30px; right: 30px; z-index: 9998;
+            background: linear-gradient(135deg, #0ea5e9, #3b82f6, #2563eb);
+            background-size: 200% 200%;
+            color: #fff; border: none; padding: 14px 28px;
+            border-radius: 30px; font-weight: 800; cursor: pointer;
+            box-shadow: 0 10px 25px rgba(14, 165, 233, 0.5); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 1px; text-transform: uppercase;
+            animation: pulseGlow 2s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 15px rgba(14, 165, 233, 0.4); }
+            100% { box-shadow: 0 0 30px rgba(14, 165, 233, 0.8); }
         }
         #toggle-tool-btn:hover { 
-            background: #38bdf8; color: #0f172a; box-shadow: 0 4px 20px rgba(56, 189, 248, 0.4); 
+            transform: translateY(-3px); filter: brightness(1.2);
         }
 
-        /* Wrapper dùng để chứa và kéo thả, không bị ảnh hưởng bởi transform */
+        /* --- WRAPPER & BẢNG TOOL CHÍNH --- */
         #tool-wrapper {
             position: absolute; top: 50px; left: 50px; z-index: 9999;
         }
 
-        /* Bảng nổi (Floating Panel) - Giao diện Glassmorphism mới */
         #tool-panel {
-            width: 350px;
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
-            color: #e2e8f0; display: flex; flex-direction: column; overflow: hidden;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            width: 360px;
+            background: rgba(10, 15, 30, 0.9);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            border-radius: 18px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9), 
+                        inset 0 1px 3px rgba(255, 255, 255, 0.1),
+                        0 0 30px rgba(56, 189, 248, 0.2); 
+            color: #f8fafc; display: flex; flex-direction: column; overflow: hidden;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
             transform-origin: center center;
+            position: relative;
         }
 
+        /* Viền sáng chạy dọc panel */
+        #tool-panel::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 2px;
+            background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+            animation: scanline 3s linear infinite;
+        }
+        @keyframes scanline {
+            0% { left: -100%; } 100% { left: 200%; }
+        }
+
+        /* --- HEADER --- */
         #tool-header {
-            background: rgba(0, 0, 0, 0.5); padding: 10px 15px;
+            background: linear-gradient(90deg, rgba(15,23,42,1) 0%, rgba(30,41,59,0.95) 100%);
+            padding: 14px 18px;
             display: flex; justify-content: space-between; align-items: center;
-            cursor: move; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: move; border-bottom: 1px solid rgba(56, 189, 248, 0.3);
             user-select: none;
+            touch-action: none; /* Cực kỳ quan trọng cho kéo thả mobile */
         }
         #tool-header .title { 
-            color: #38bdf8; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;
+            color: #38bdf8; font-weight: 900; font-size: 15px; text-transform: uppercase; 
+            letter-spacing: 1.5px; text-shadow: 0 0 12px rgba(56,189,248,0.7);
+            display: flex; align-items: center; gap: 5px;
         }
 
-        /* Cụm nút điều khiển trên Header */
-        .header-controls {
-            display: flex; gap: 6px; align-items: center;
-        }
+        .header-controls { display: flex; gap: 6px; align-items: center; }
         .ctrl-btn {
             background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            color: #cbd5e1; cursor: pointer; font-size: 12px; width: 26px; height: 26px;
-            border-radius: 6px; display: flex; justify-content: center; align-items: center;
-            transition: all 0.2s;
+            color: #cbd5e1; cursor: pointer; font-size: 14px; width: 30px; height: 30px;
+            border-radius: 8px; display: flex; justify-content: center; align-items: center;
+            transition: all 0.2s ease;
         }
-        .ctrl-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        .ctrl-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
+        
+        .reset-btn { color: #fb923c; border-color: rgba(251, 146, 60, 0.3); }
+        .reset-btn:hover { background: #fb923c; color: #000; box-shadow: 0 0 12px #fb923c; }
+        
+        .rotate-btn { color: #a855f7; border-color: rgba(168, 85, 247, 0.3); }
+        .rotate-btn:hover { background: #a855f7; color: #fff; box-shadow: 0 0 12px #a855f7; }
+
         .close-btn { color: #f43f5e; border-color: rgba(244, 63, 94, 0.3); }
-        .close-btn:hover { background: #f43f5e; color: #fff; }
+        .close-btn:hover { background: #f43f5e; color: #fff; box-shadow: 0 0 12px #f43f5e; }
 
-        #tool-body { padding: 18px; }
+        /* --- BODY & FORM --- */
+        #tool-body { padding: 22px; }
 
-        .input-group { margin-bottom: 14px; }
-        .input-group label { display: block; font-size: 12px; margin-bottom: 6px; color: #94a3b8; font-weight: 500;}
+        .input-group { margin-bottom: 18px; }
+        .input-group label { 
+            display: block; font-size: 11px; margin-bottom: 8px; color: #94a3b8; 
+            font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+        }
         .input-group input {
-            width: 100%; box-sizing: border-box; padding: 11px; border-radius: 8px;
-            background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff; outline: none; font-family: monospace; font-size: 14px;
-            transition: border-color 0.2s;
+            width: 100%; box-sizing: border-box; padding: 14px 16px; border-radius: 12px;
+            background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(148, 163, 184, 0.25);
+            color: #fff; outline: none; font-family: 'Courier New', Courier, monospace; 
+            font-size: 17px; font-weight: bold; letter-spacing: 2px;
+            transition: all 0.3s ease; box-shadow: inset 0 3px 6px rgba(0,0,0,0.6);
         }
-        .input-group input:focus { border-color: #38bdf8; box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); }
-        .input-group input::placeholder { color: #475569; }
+        .input-group input:focus { 
+            border-color: #38bdf8; background: rgba(0,0,0,0.8);
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2), inset 0 3px 6px rgba(0,0,0,0.6); 
+            transform: translateY(-1px);
+        }
+        .input-group input::placeholder { color: #475569; font-weight: normal; letter-spacing: normal;}
 
+        /* --- NÚT PHÂN TÍCH --- */
         #btn-phan-tich {
-            width: 100%; padding: 13px; background: linear-gradient(135deg, #2563eb, #3b82f6);
-            border: none; border-radius: 8px; color: #fff; font-weight: bold; font-size: 14px;
-            cursor: pointer; margin-top: 5px; transition: transform 0.1s, filter 0.2s;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); letter-spacing: 0.5px;
+            width: 100%; padding: 16px; 
+            background: linear-gradient(90deg, #2563eb, #06b6d4, #8b5cf6, #2563eb);
+            background-size: 300% 100%;
+            border: none; border-radius: 12px; color: #fff; 
+            font-weight: 900; font-size: 16px; text-transform: uppercase;
+            cursor: pointer; margin-top: 5px; 
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.5); letter-spacing: 1.5px;
+            animation: gradientMove 4s infinite linear;
         }
-        #btn-phan-tich:hover { filter: brightness(1.15); }
-        #btn-phan-tich:active { transform: scale(0.98); }
+        @keyframes gradientMove { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+        #btn-phan-tich:hover { filter: brightness(1.25); transform: translateY(-3px); box-shadow: 0 15px 30px rgba(37, 99, 235, 0.7); }
+        #btn-phan-tich:active { transform: translateY(1px); }
 
+        /* --- KHUNG KẾT QUẢ --- */
         #result-box {
-            margin-top: 18px; padding: 14px; background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px; font-size: 13px; line-height: 1.6;
-            min-height: 80px; display: none; border-left: 3px solid #38bdf8;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+            margin-top: 22px; padding: 18px; background: rgba(0, 0, 0, 0.5);
+            border-radius: 12px; font-size: 14px; line-height: 1.7;
+            min-height: 80px; display: none; border-left: 5px solid #38bdf8;
+            box-shadow: inset 0 2px 20px rgba(0,0,0,0.4);
+            border-right: 1px solid rgba(255,255,255,0.08);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: relative;
         }
 
-        .highlight { color: #facc15; font-weight: 600; }
-        .alert { color: #fb7185; font-weight: 600; }
+        .highlight { color: #facc15; font-weight: bold; text-shadow: 0 0 8px rgba(250, 204, 21, 0.4); }
+        .alert { color: #fb7185; font-weight: bold; text-shadow: 0 0 8px rgba(251, 113, 133, 0.4); }
         .chot-danh { 
-            font-size: 16px; color: #10b981; font-weight: bold; text-align: center; 
-            margin-top: 12px; text-transform: uppercase; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1);
+            font-size: 20px; color: #10b981; font-weight: 900; text-align: center; 
+            margin-top: 18px; text-transform: uppercase; padding-top: 18px; 
+            border-top: 1px dashed rgba(255,255,255,0.2);
+            text-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+            letter-spacing: 2px;
         }
 
+        /* --- TRACKING BUTTONS --- */
         .tracking-group {
-            display: flex; justify-content: space-between; margin-top: 18px; gap: 8px;
+            display: flex; justify-content: space-between; margin-top: 22px; gap: 12px;
             display: none;
         }
         .track-btn {
-            flex: 1; padding: 10px; border: none; border-radius: 6px; font-size: 12px;
-            font-weight: 600; cursor: pointer; color: #fff; transition: all 0.2s;
+            flex: 1; padding: 14px 0; border: none; border-radius: 10px; font-size: 13px;
+            font-weight: 800; cursor: pointer; color: #fff; transition: all 0.2s ease;
+            text-transform: uppercase; letter-spacing: 1px;
+            position: relative; overflow: hidden;
         }
-        .btn-dung { background: rgba(16, 185, 129, 0.8); border: 1px solid rgba(16, 185, 129, 0.5); }
-        .btn-sai { background: rgba(239, 68, 68, 0.8); border: 1px solid rgba(239, 68, 68, 0.5); }
-        .btn-bo-qua { background: rgba(71, 85, 105, 0.8); border: 1px solid rgba(71, 85, 105, 0.5); }
+        .btn-dung { background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4); }
+        .btn-sai { background: linear-gradient(135deg, #e11d48, #f43f5e); box-shadow: 0 6px 15px rgba(244, 63, 94, 0.4); }
+        .btn-bo-qua { background: linear-gradient(135deg, #475569, #64748b); box-shadow: 0 6px 15px rgba(100, 116, 139, 0.4); }
         
-        .track-btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        .track-btn:hover { filter: brightness(1.2); transform: translateY(-4px); }
         .track-btn:active { transform: translateY(0); }
+
+        /* --- TOAST THÔNG BÁO --- */
+        #toast-msg {
+            position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(90deg, #f59e0b, #d97706); color: #fff; 
+            padding: 8px 20px; border-radius: 20px;
+            font-size: 13px; font-weight: 800; opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: none; white-space: nowrap; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.5);
+            z-index: 10000;
+        }
+        .toast-show { top: -25px !important; opacity: 1 !important; }
 
     </style>
 </head>
@@ -128,16 +194,18 @@
 
     <iframe id="game-frame" src="https://web.sunwin.ke/"></iframe>
 
-    <button id="toggle-tool-btn" onclick="toggleTool()">MỞ TOOL AI</button>
+    <button id="toggle-tool-btn" onclick="toggleTool()">🚀 MỞ TOOL AI</button>
 
     <div id="tool-wrapper">
+        <div id="toast-msg">✅ Đã Reset Logic Bẻ Cầu!</div>
         <div id="tool-panel">
             <div id="tool-header">
-                <span class="title">◆ Logic Dark AI v2 (Structural)</span>
+                <span class="title">⚡ Logic Dark AI v2</span>
                 <div class="header-controls">
+                    <button class="ctrl-btn reset-btn" onclick="resetBoDemToanBo()" title="Khôi phục logic (Reset Ngưỡng)">♻</button>
+                    <button class="ctrl-btn rotate-btn" onclick="xoayTool()" title="Xoay Tool">🔄</button>
                     <button class="ctrl-btn" onclick="zoomOut()" title="Thu nhỏ">➖</button>
                     <button class="ctrl-btn" onclick="zoomIn()" title="Phóng to">➕</button>
-                    <button class="ctrl-btn" onclick="rotatePanel()" title="Xoay 90 độ">🔄</button>
                     <button class="ctrl-btn close-btn" onclick="toggleTool()" title="Ẩn Tool">✖</button>
                 </div>
             </div>
@@ -147,59 +215,84 @@
                     <input type="text" id="input-chuoi" placeholder="Ví dụ: TTXXTXTXTX" oninput="this.value = this.value.toUpperCase()">
                 </div>
                 <div class="input-group">
-                    <label>Xúc xắc (cách nhau khoảng trắng, tuỳ chọn)</label>
+                    <label>Xúc xắc (tuỳ chọn, cách nhau dấu cách)</label>
                     <input type="text" id="input-xx" placeholder="Ví dụ: 4 5 6">
                 </div>
                 
-                <button id="btn-phan-tich" onclick="chayPhanTich()">PHÂN TÍCH CHUỖI</button>
+                <button id="btn-phan-tich" onclick="chayPhanTich()">PHÂN TÍCH NHỊP CẦU</button>
 
                 <div id="result-box"></div>
 
                 <div class="tracking-group" id="tracking-controls">
-                    <button class="track-btn btn-dung" onclick="capNhatKetQua('d')">ĐÚNG</button>
-                    <button class="track-btn btn-sai" onclick="capNhatKetQua('s')">SAI</button>
-                    <button class="track-btn btn-bo-qua" onclick="capNhatKetQua('b')">BỎ QUA</button>
+                    <button class="track-btn btn-dung" onclick="capNhatKetQua('d')">✔ ĐÚNG</button>
+                    <button class="track-btn btn-sai" onclick="capNhatKetQua('s')">✖ SAI</button>
+                    <button class="track-btn btn-bo-qua" onclick="capNhatKetQua('b')">⏭ BỎ QUA</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- LOGIC KÉO THẢ VÀ UI GỐC ---
+        // --- LOGIC KÉO THẢ PC & MOBILE ---
         const wrapper = document.getElementById("tool-wrapper");
         const header = document.getElementById("tool-header");
         let isDragging = false, offsetX, offsetY;
 
-        header.addEventListener("mousedown", (e) => {
+        function startDrag(e) {
+            if(e.target.closest('.ctrl-btn')) return; // Bỏ qua nếu bấm vào nút
             isDragging = true;
-            offsetX = e.clientX - wrapper.offsetLeft;
-            offsetY = e.clientY - wrapper.offsetTop;
+            // Lấy tọa độ chuẩn cho cả chuột và cảm ứng
+            let clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            let clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+            
+            offsetX = clientX - wrapper.offsetLeft;
+            offsetY = clientY - wrapper.offsetTop;
             document.body.style.userSelect = "none";
-        });
-        document.addEventListener("mousemove", (e) => {
+        }
+
+        function doDrag(e) {
             if (!isDragging) return;
-            wrapper.style.left = (e.clientX - offsetX) + "px";
-            wrapper.style.top = (e.clientY - offsetY) + "px";
-        });
-        document.addEventListener("mouseup", () => {
+            e.preventDefault(); // Chống cuộn trang trên mobile khi đang kéo
+            let clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            let clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+            
+            wrapper.style.left = (clientX - offsetX) + "px";
+            wrapper.style.top = (clientY - offsetY) + "px";
+        }
+
+        function stopDrag() {
             isDragging = false;
             document.body.style.userSelect = "auto";
-        });
+        }
 
+        // Bắt sự kiện PC
+        header.addEventListener("mousedown", startDrag);
+        document.addEventListener("mousemove", doDrag);
+        document.addEventListener("mouseup", stopDrag);
+
+        // Bắt sự kiện Mobile (Touch)
+        header.addEventListener("touchstart", startDrag, {passive: false});
+        document.addEventListener("touchmove", doDrag, {passive: false});
+        document.addEventListener("touchend", stopDrag);
+
+        // --- ZOOM VÀ XOAY TOOL ---
         let currentScale = 1;
         let currentRotation = 0;
         const panelInner = document.getElementById("tool-panel");
 
-        function updateTransform() {
-            panelInner.style.transform = `scale(${currentScale}) rotate(${currentRotation}deg)`;
+        function updateTransform() { 
+            panelInner.style.transform = `scale(${currentScale}) rotate(${currentRotation}deg)`; 
+        }
+        function zoomIn() { if (currentScale < 1.4) currentScale += 0.1; updateTransform(); }
+        function zoomOut() { if (currentScale > 0.7) currentScale -= 0.1; updateTransform(); }
+        
+        function xoayTool() {
+            currentRotation = (currentRotation + 90) % 360;
+            updateTransform();
         }
 
-        function zoomIn() { if (currentScale < 1.6) currentScale += 0.1; updateTransform(); }
-        function zoomOut() { if (currentScale > 0.6) currentScale -= 0.1; updateTransform(); }
-        function rotatePanel() { currentRotation = (currentRotation + 90) % 360; updateTransform(); }
-
         function toggleTool() {
-            if (wrapper.style.display === "none") {
+            if (wrapper.style.display === "none" || wrapper.style.display === "") {
                 wrapper.style.display = "block";
                 document.getElementById("toggle-tool-btn").style.display = "none";
             } else {
@@ -220,14 +313,27 @@
                 90: {sai: 0, dac_cach: 0}
             };
         }
+        
         let boDemSai = {
             Chuoi: { "Tài": taoBoDemNguong(), "Xỉu": taoBoDemNguong() },
             TongHop: { "Tài": taoBoDemNguong(), "Xỉu": taoBoDemNguong() }
         };
 
-        // --- CÁC HÀM NHẬN DIỆN CẤU TRÚC (RULE-BASED) MỚI ---
+        function resetBoDemToanBo() {
+            boDemSai = {
+                Chuoi: { "Tài": taoBoDemNguong(), "Xỉu": taoBoDemNguong() },
+                TongHop: { "Tài": taoBoDemNguong(), "Xỉu": taoBoDemNguong() }
+            };
+            
+            const toast = document.getElementById("toast-msg");
+            toast.classList.add("toast-show");
+            setTimeout(() => { toast.classList.remove("toast-show"); }, 2000);
+            
+            document.getElementById("result-box").style.display = "none";
+            document.getElementById("tracking-controls").style.display = "none";
+        }
 
-        // 1. Phân tích Weight chuẩn
+        // --- CÁC HÀM NHẬN DIỆN CẤU TRÚC LOGIC CHÍNH (GIỮ NGUYÊN) ---
         function phanTichChuoiWeighted(chuoiStr) {
             let weights = Array.from({length: chuoiStr.length}, (_, i) => Math.pow(2, i));
             let tongWeight = weights.reduce((a, b) => a + b, 0);
@@ -239,38 +345,31 @@
             return [ Number((tai / tongWeight * 100).toFixed(1)), Number((xiu / tongWeight * 100).toFixed(1)) ];
         }
 
-        // 2. Nhận diện đan xen 1-1 (TXTXT)
         function laCauDanXen(chuoiStr) {
             if (chuoiStr.length < 5) return false;
             let sub = chuoiStr.slice(-5);
-            for (let i = 0; i < sub.length - 1; i++) {
-                if (sub[i] === sub[i+1]) return false;
-            }
+            for (let i = 0; i < sub.length - 1; i++) { if (sub[i] === sub[i+1]) return false; }
             return true;
         }
 
-        // 3. Nhận diện nhịp 2-2 (TTXXTT)
         function laCau22(seq) {
             if (seq.length < 4) return false;
             let sub = seq.slice(-4);
             return sub === "TTXX" || sub === "XXTT";
         }
 
-        // 4. Nhận diện nhịp 1-2 hoặc 2-1 (TXXT / XTTX)
         function laCau12_21(seq) {
             if (seq.length < 4) return false;
             let sub = seq.slice(-4);
             return sub === "TXXT" || sub === "XTTX";
         }
 
-        // 5. Nhận diện cầu đối xứng / gương (TXT, TXXXT)
         function laCauDoiXung(seq, doDai = 5) {
             if(seq.length < doDai) return false;
             let sub = seq.slice(-doDai);
             return sub === sub.split('').reverse().join('');
         }
 
-        // 6. Nhận diện cầu tiến/lùi (1-2-3 hoặc 3-2-1)
         function laCauTienLui(seq) {
             if(seq.length < 6) return false;
             let sub = seq.slice(-6);
@@ -279,7 +378,6 @@
             return false;
         }
 
-        // 7. Nhận diện chuỗi lặp (chu kỳ)
         function phanTichChuKy(chuoiStr) {
             for (let l of [5, 4, 3, 2]) {
                 if (chuoiStr.length >= 2 * l) {
@@ -291,31 +389,20 @@
             return null;
         }
 
-        // --- PHÁT HIỆN BỊP CHUYÊN SÂU ---
         function phatHienCauBip(seq) {
-            // Bịp 1: Bệt quá dài, AI sàn thường bẻ đột ngột
             if (seq.length >= 6 && (seq.endsWith("TTTTTT") || seq.endsWith("XXXXXX"))) return "Bệt dài bất thường - Nguy cơ gãy gập";
-            
-            // Bịp 2: Cầu đối xứng hoàn hảo (gương lừa)
             if (laCauDoiXung(seq, 5) || laCauDoiXung(seq, 6)) return "Cầu Gương Đối Xứng - Thường đảo nhịp lừa đánh tiếp";
-            
-            // Bịp 3: Cầu tiến lùi
             let tienLui = laCauTienLui(seq);
             if (tienLui === "Tien") return "Cầu Tiến (1-2-3) - Bịp tạo cảm giác quen";
             if (tienLui === "Lui") return "Cầu Lùi (3-2-1) - Dễ bị bẻ gãy cuối chuỗi";
-
-            // Bịp 4: Nhử đan xen rồi gãy
             if (seq.length >= 5 && (seq.endsWith("TXTXX") || seq.endsWith("XTXTT"))) return "Cầu nhử đan xen 1-1 rồi bẻ kẹp";
-
             return null;
         }
 
-        // --- LOGIC DỰ ĐOÁN CHÍNH DỰA TRÊN CẤU TRÚC ---
         function duDoanTuChuoi(chuoiStr) {
             let [percTai, percXiu] = phanTichChuoiWeighted(chuoiStr);
             let diemTai = 0, diemXiu = 0;
 
-            // Chấm điểm xu hướng dài hạn
             for (let l = 7; l > 2; l--) {
                 if (chuoiStr.length >= l) {
                     let sub = chuoiStr.slice(-l);
@@ -324,38 +411,30 @@
                 }
             }
 
-            // Chấm điểm theo chu kỳ
             let ck = phanTichChuKy(chuoiStr);
             if (ck === "T") diemTai += 5;
             else if (ck === "X") diemXiu += 5;
 
-            // --- ÁP DỤNG CÁC QUY LUẬT CẤU TRÚC (THAY THẾ HARDCODE MẪU CẦU) ---
-            
-            // Nếu là đan xen 1-1
             if (laCauDanXen(chuoiStr)) {
                 if (chuoiStr.slice(-1) === "T") diemXiu += 4;
                 else diemTai += 4;
             }
 
-            // Nếu là nhịp 2-2
             if (laCau22(chuoiStr)) {
-                if (chuoiStr.slice(-1) === "X") diemTai += 4; // TTXX -> dự đoán T
-                else diemXiu += 4; // XXTT -> dự đoán X
+                if (chuoiStr.slice(-1) === "X") diemTai += 4; 
+                else diemXiu += 4; 
             }
 
-            // Nếu là nhịp kẹp 1-2 hoặc 2-1
             if (laCau12_21(chuoiStr)) {
-                if (chuoiStr.slice(-1) === "T") diemXiu += 4; // TXXT -> dự đoán X để nối nhịp
-                else diemTai += 4; // XTTX -> dự đoán T
+                if (chuoiStr.slice(-1) === "T") diemXiu += 4; 
+                else diemTai += 4; 
             }
 
-            // Nếu gặp cầu đối xứng, AI có xu hướng bẻ ngược lại cái gương
             if (laCauDoiXung(chuoiStr, 5)) {
                 if (chuoiStr.slice(-1) === "T") diemXiu += 3;
                 else diemTai += 3;
             }
 
-            // --- CÁC LOGIC PHỤ TRỢ ---
             if (percTai > percXiu + NGUONG_TY_LE) diemTai += 4;
             else if (percXiu > percTai + NGUONG_TY_LE) diemXiu += 4;
 
@@ -367,7 +446,6 @@
             return ["Không rõ", percTai, percXiu];
         }
 
-        // --- XÚC XẮC & TỔNG HỢP GỐC ---
         function duDoanTuXucXac(x1, x2, x3) {
             let tong = x1 + x2 + x3;
             if (tong >= 11 && tong <= 17) return ["Tài", tong];
@@ -439,51 +517,48 @@
             currentIsChuoiDacCach = false; currentIsThDacCach = false;
             let kqChuoiHienThi = kqChuoiGoc;
             
-            // XỬ LÝ LÕI CHUỖI VỚI NGƯỠNG BẺ CẦU = 4 (Giữ nguyên theo yêu cầu)
             currentLoiChuoi = cleanKq(kqChuoiGoc);
             currentNguongChuoi = currentLoiChuoi ? layNguong(Math.max(pt, px)) : null;
             
             if (currentLoiChuoi && currentNguongChuoi) {
                 let dataC = boDemSai.Chuoi[currentLoiChuoi][currentNguongChuoi];
-                if (dataC.sai >= 4) { 
+                if (dataC.sai >= 1) { 
                     if (dataC.dac_cach === 1) {
                         currentIsChuoiDacCach = true;
                         dataC.dac_cach = 0;
-                        kqChuoiHienThi = `${currentLoiChuoi} <span class="highlight">[ĐẶC CÁCH ĐÁNH THUẬN 1 TAY: Ngưỡng ${currentLoiChuoi} ${currentNguongChuoi}%]</span>`;
+                        kqChuoiHienThi = `${currentLoiChuoi} <span class="highlight">[ĐẶC CÁCH 1 TAY: Ngưỡng ${currentNguongChuoi}%]</span>`;
                     } else {
                         let dao = currentLoiChuoi === "Tài" ? "Xỉu" : "Tài";
-                        kqChuoiHienThi = `${dao} <span class="alert">[BẺ CẦU CHUỖI: Đang sai ở ${currentLoiChuoi} ${currentNguongChuoi}%]</span>`;
+                        kqChuoiHienThi = `${dao} <span class="alert">[BẺ CẦU: Sai ở ${currentNguongChuoi}%]</span>`;
                     }
                 }
             }
 
-            // XỬ LÝ LÕI TỔNG HỢP VỚI NGƯỠNG BẺ CẦU = 4
             currentLoiTh = cleanKq(kqTongHopGoc);
             currentNguongTh = currentNguongChuoi;
             currentChotDanh = kqTongHopGoc;
 
             if (currentLoiTh && currentNguongTh) {
                 let dataT = boDemSai.TongHop[currentLoiTh][currentNguongTh];
-                if (dataT.sai >= 4) { 
+                if (dataT.sai >= 1) { 
                     if (dataT.dac_cach === 1) {
                         currentIsThDacCach = true;
                         dataT.dac_cach = 0;
-                        currentChotDanh = `${currentLoiTh} <span class="highlight">[ĐẶC CÁCH TỔNG HỢP 1 TAY: Ngưỡng ${currentLoiTh} ${currentNguongTh}%]</span>`;
+                        currentChotDanh = `${currentLoiTh} <span class="highlight">[ĐẶC CÁCH T.HỢP: Ngưỡng ${currentNguongTh}%]</span>`;
                     } else {
                         let daoT = currentLoiTh === "Tài" ? "Xỉu" : "Tài";
-                        currentChotDanh = `${daoT} <span class="alert">[BẺ CẦU TỔNG HỢP: Đang sai ở ${currentLoiTh} ${currentNguongTh}%]</span>`;
+                        currentChotDanh = `${daoT} <span class="alert">[BẺ CẦU T.HỢP: Sai ở ${currentNguongTh}%]</span>`;
                     }
                 }
             }
 
-            // IN RA MÀN HÌNH
             let htmlOut = "";
             let bip = phatHienCauBip(chuoi);
-            if (bip) htmlOut += `<div class='alert' style='margin-bottom:8px'>[!] CẢNH BÁO: ${bip}</div>`;
+            if (bip) htmlOut += `<div class='alert' style='margin-bottom:10px; font-size: 12px'>[!] CẢNH BÁO: ${bip}</div>`;
             htmlOut += `<div>Tỷ lệ: Tài <b style="color:#38bdf8">${pt}%</b> | Xỉu <b style="color:#38bdf8">${px}%</b></div>`;
-            htmlOut += `<div style="margin-top:6px">Chuỗi dự đoán: <b>${kqChuoiHienThi}</b></div>`;
-            if (xucXac) htmlOut += `<div style="margin-top:6px">Xúc xắc dự đoán: <b>${kqXxGoc}</b></div>`;
-            htmlOut += `<div class='chot-danh'>➡ CHỐT ĐÁNH: ${currentChotDanh.toUpperCase()} ⬅</div>`;
+            htmlOut += `<div style="margin-top:8px">Chuỗi: <b>${kqChuoiHienThi}</b></div>`;
+            if (xucXac) htmlOut += `<div style="margin-top:8px">Xúc xắc: <b>${kqXxGoc}</b></div>`;
+            htmlOut += `<div class='chot-danh'>➡ CHỐT: ${currentChotDanh.toUpperCase()} ⬅</div>`;
 
             resBox.innerHTML = htmlOut;
             resBox.style.display = "block";
@@ -508,7 +583,7 @@
             if (currentLoiChuoi) {
                 let dC = boDemSai.Chuoi[currentLoiChuoi][currentNguongChuoi];
                 if (currentLoiChuoi === thucTe) {
-                    if (dC.sai >= 4 && !currentIsChuoiDacCach) dC.dac_cach = 1; 
+                    if (dC.sai >= 1 && !currentIsChuoiDacCach) dC.dac_cach = 1; 
                 } else {
                     dC.sai += 1; dC.dac_cach = 0;
                 }
@@ -517,7 +592,7 @@
             if (currentLoiTh) {
                 let dT = boDemSai.TongHop[currentLoiTh][currentNguongTh];
                 if (currentLoiTh === thucTe) {
-                    if (dT.sai >= 4 && !currentIsThDacCach) dT.dac_cach = 1; 
+                    if (dT.sai >= 1 && !currentIsThDacCach) dT.dac_cach = 1; 
                 } else {
                     dT.sai += 1; dT.dac_cach = 0;
                 }
@@ -528,7 +603,7 @@
 
         function resetGiaoDien() {
             document.getElementById("tracking-controls").style.display = "none";
-            document.getElementById("result-box").innerHTML += `<div style="color:#10b981; font-size:11px; margin-top:10px; font-style:italic;">(Đã tự động đẩy chuỗi và lưu Data, sẵn sàng ván mới!)</div>`;
+            document.getElementById("result-box").innerHTML += `<div style="color:#38bdf8; font-size:12px; margin-top:12px; font-style:italic; font-weight:700; text-align:center;">(Đã lưu Data & cập nhật chuỗi tiếp theo)</div>`;
             document.getElementById("input-xx").value = ""; 
         }
     </script>
