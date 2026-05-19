@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tool Tài Xỉu Tích Hợp - UI/UX Pro</title>
+    <title>Tool Tài Xỉu Tích Hợp - UI/UX Pro & Logic Dark Mới</title>
     <style>
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; 
@@ -133,7 +133,7 @@
     <div id="tool-wrapper">
         <div id="tool-panel">
             <div id="tool-header">
-                <span class="title">◆ Logic Dark AI</span>
+                <span class="title">◆ Logic Dark AI v2 (Structural)</span>
                 <div class="header-controls">
                     <button class="ctrl-btn" onclick="zoomOut()" title="Thu nhỏ">➖</button>
                     <button class="ctrl-btn" onclick="zoomIn()" title="Phóng to">➕</button>
@@ -165,14 +165,13 @@
     </div>
 
     <script>
-        // --- LOGIC KÉO THẢ (DRAG) TỐI ƯU HÓA KHI XOAY/ZOOM ---
+        // --- LOGIC KÉO THẢ VÀ UI GỐC ---
         const wrapper = document.getElementById("tool-wrapper");
         const header = document.getElementById("tool-header");
         let isDragging = false, offsetX, offsetY;
 
         header.addEventListener("mousedown", (e) => {
             isDragging = true;
-            // Tính toán khoảng cách từ chuột đến viền wrapper để kéo chuẩn xác
             offsetX = e.clientX - wrapper.offsetLeft;
             offsetY = e.clientY - wrapper.offsetTop;
             document.body.style.userSelect = "none";
@@ -187,7 +186,6 @@
             document.body.style.userSelect = "auto";
         });
 
-        // --- HỆ THỐNG XOAY VÀ PHÓNG TO/THU NHỎ ---
         let currentScale = 1;
         let currentRotation = 0;
         const panelInner = document.getElementById("tool-panel");
@@ -196,20 +194,9 @@
             panelInner.style.transform = `scale(${currentScale}) rotate(${currentRotation}deg)`;
         }
 
-        function zoomIn() {
-            if (currentScale < 1.6) currentScale += 0.1;
-            updateTransform();
-        }
-
-        function zoomOut() {
-            if (currentScale > 0.6) currentScale -= 0.1;
-            updateTransform();
-        }
-
-        function rotatePanel() {
-            currentRotation = (currentRotation + 90) % 360;
-            updateTransform();
-        }
+        function zoomIn() { if (currentScale < 1.6) currentScale += 0.1; updateTransform(); }
+        function zoomOut() { if (currentScale > 0.6) currentScale -= 0.1; updateTransform(); }
+        function rotatePanel() { currentRotation = (currentRotation + 90) % 360; updateTransform(); }
 
         function toggleTool() {
             if (wrapper.style.display === "none") {
@@ -222,7 +209,7 @@
         }
         document.getElementById("toggle-tool-btn").style.display = "none";
 
-        // --- HỆ THỐNG BIẾN VÀ TRACKING LOGIC GỐC ---
+        // --- HỆ THỐNG BIẾN TRACKING ---
         const NGUONG_TY_LE = 3;
         function taoBoDemNguong() {
             return {
@@ -233,13 +220,14 @@
                 90: {sai: 0, dac_cach: 0}
             };
         }
-
         let boDemSai = {
             Chuoi: { "Tài": taoBoDemNguong(), "Xỉu": taoBoDemNguong() },
             TongHop: { "Tài": taoBoDemNguong(), "Xỉu": taoBoDemNguong() }
         };
 
-        // --- CÁC HÀM PHÂN TÍCH LOGIC GỐC ---
+        // --- CÁC HÀM NHẬN DIỆN CẤU TRÚC (RULE-BASED) MỚI ---
+
+        // 1. Phân tích Weight chuẩn
         function phanTichChuoiWeighted(chuoiStr) {
             let weights = Array.from({length: chuoiStr.length}, (_, i) => Math.pow(2, i));
             let tongWeight = weights.reduce((a, b) => a + b, 0);
@@ -251,15 +239,47 @@
             return [ Number((tai / tongWeight * 100).toFixed(1)), Number((xiu / tongWeight * 100).toFixed(1)) ];
         }
 
-        function demChuoiLienTiep(chuoiStr, kyTu) {
-            let count = 0;
-            for (let i = chuoiStr.length - 1; i >= 0; i--) {
-                if (chuoiStr[i] === kyTu) count++;
-                else break;
+        // 2. Nhận diện đan xen 1-1 (TXTXT)
+        function laCauDanXen(chuoiStr) {
+            if (chuoiStr.length < 5) return false;
+            let sub = chuoiStr.slice(-5);
+            for (let i = 0; i < sub.length - 1; i++) {
+                if (sub[i] === sub[i+1]) return false;
             }
-            return count;
+            return true;
         }
 
+        // 3. Nhận diện nhịp 2-2 (TTXXTT)
+        function laCau22(seq) {
+            if (seq.length < 4) return false;
+            let sub = seq.slice(-4);
+            return sub === "TTXX" || sub === "XXTT";
+        }
+
+        // 4. Nhận diện nhịp 1-2 hoặc 2-1 (TXXT / XTTX)
+        function laCau12_21(seq) {
+            if (seq.length < 4) return false;
+            let sub = seq.slice(-4);
+            return sub === "TXXT" || sub === "XTTX";
+        }
+
+        // 5. Nhận diện cầu đối xứng / gương (TXT, TXXXT)
+        function laCauDoiXung(seq, doDai = 5) {
+            if(seq.length < doDai) return false;
+            let sub = seq.slice(-doDai);
+            return sub === sub.split('').reverse().join('');
+        }
+
+        // 6. Nhận diện cầu tiến/lùi (1-2-3 hoặc 3-2-1)
+        function laCauTienLui(seq) {
+            if(seq.length < 6) return false;
+            let sub = seq.slice(-6);
+            if (sub === "TXXTTT" || sub === "XTTXXX") return "Tien";
+            if (sub === "TTTXXT" || sub === "XXXTX") return "Lui";
+            return false;
+        }
+
+        // 7. Nhận diện chuỗi lặp (chu kỳ)
         function phanTichChuKy(chuoiStr) {
             for (let l of [5, 4, 3, 2]) {
                 if (chuoiStr.length >= 2 * l) {
@@ -271,26 +291,31 @@
             return null;
         }
 
-        function laCauDanXen(chuoiStr) {
-            if (chuoiStr.length < 6) return false;
-            let sub = chuoiStr.slice(-6, -1);
-            for (let i = 0; i < sub.length - 1; i++) {
-                if (sub[i] === sub[i+1]) return false;
-            }
-            return true;
-        }
-
+        // --- PHÁT HIỆN BỊP CHUYÊN SÂU ---
         function phatHienCauBip(seq) {
-            if (seq.length >= 6 && (seq.endsWith("TTTTTT") || seq.endsWith("XXXXXX"))) return "Cầu bệt dài bất thường";
-            if (seq.length >= 5 && (seq.endsWith("TXTXX") || seq.endsWith("XTXTT"))) return "Cầu nhử đảo 1-1-2";
-            if (seq.endsWith("TXXTXT")) return "Cầu bẫy lặp đều";
+            // Bịp 1: Bệt quá dài, AI sàn thường bẻ đột ngột
+            if (seq.length >= 6 && (seq.endsWith("TTTTTT") || seq.endsWith("XXXXXX"))) return "Bệt dài bất thường - Nguy cơ gãy gập";
+            
+            // Bịp 2: Cầu đối xứng hoàn hảo (gương lừa)
+            if (laCauDoiXung(seq, 5) || laCauDoiXung(seq, 6)) return "Cầu Gương Đối Xứng - Thường đảo nhịp lừa đánh tiếp";
+            
+            // Bịp 3: Cầu tiến lùi
+            let tienLui = laCauTienLui(seq);
+            if (tienLui === "Tien") return "Cầu Tiến (1-2-3) - Bịp tạo cảm giác quen";
+            if (tienLui === "Lui") return "Cầu Lùi (3-2-1) - Dễ bị bẻ gãy cuối chuỗi";
+
+            // Bịp 4: Nhử đan xen rồi gãy
+            if (seq.length >= 5 && (seq.endsWith("TXTXX") || seq.endsWith("XTXTT"))) return "Cầu nhử đan xen 1-1 rồi bẻ kẹp";
+
             return null;
         }
 
+        // --- LOGIC DỰ ĐOÁN CHÍNH DỰA TRÊN CẤU TRÚC ---
         function duDoanTuChuoi(chuoiStr) {
             let [percTai, percXiu] = phanTichChuoiWeighted(chuoiStr);
             let diemTai = 0, diemXiu = 0;
 
+            // Chấm điểm xu hướng dài hạn
             for (let l = 7; l > 2; l--) {
                 if (chuoiStr.length >= l) {
                     let sub = chuoiStr.slice(-l);
@@ -299,71 +324,50 @@
                 }
             }
 
+            // Chấm điểm theo chu kỳ
             let ck = phanTichChuKy(chuoiStr);
             if (ck === "T") diemTai += 5;
             else if (ck === "X") diemXiu += 5;
 
+            // --- ÁP DỤNG CÁC QUY LUẬT CẤU TRÚC (THAY THẾ HARDCODE MẪU CẦU) ---
+            
+            // Nếu là đan xen 1-1
             if (laCauDanXen(chuoiStr)) {
                 if (chuoiStr.slice(-1) === "T") diemXiu += 4;
                 else diemTai += 4;
             }
 
-            let tail = chuoiStr.slice(-5);
-            let mauCau = {"TTXXT": "T", "XXTTX": "X", "TXXTX": "T", "XTTXT": "X", "TXT": "X", "XTX": "T", "TTX": "X", "XXT": "T"};
-            for (let k in mauCau) {
-                if (tail.endsWith(k)) {
-                    if (mauCau[k] === "T") diemTai += 4;
-                    else diemXiu += 4;
-                }
+            // Nếu là nhịp 2-2
+            if (laCau22(chuoiStr)) {
+                if (chuoiStr.slice(-1) === "X") diemTai += 4; // TTXX -> dự đoán T
+                else diemXiu += 4; // XXTT -> dự đoán X
             }
 
+            // Nếu là nhịp kẹp 1-2 hoặc 2-1
+            if (laCau12_21(chuoiStr)) {
+                if (chuoiStr.slice(-1) === "T") diemXiu += 4; // TXXT -> dự đoán X để nối nhịp
+                else diemTai += 4; // XTTX -> dự đoán T
+            }
+
+            // Nếu gặp cầu đối xứng, AI có xu hướng bẻ ngược lại cái gương
+            if (laCauDoiXung(chuoiStr, 5)) {
+                if (chuoiStr.slice(-1) === "T") diemXiu += 3;
+                else diemTai += 3;
+            }
+
+            // --- CÁC LOGIC PHỤ TRỢ ---
             if (percTai > percXiu + NGUONG_TY_LE) diemTai += 4;
             else if (percXiu > percTai + NGUONG_TY_LE) diemXiu += 4;
 
-            let countT = chuoiStr.split("T").length - 1;
-            let countX = chuoiStr.split("X").length - 1;
-            if (countT >= 0.6 * chuoiStr.length) diemTai += 2;
-            else if (countX >= 0.6 * chuoiStr.length) diemXiu += 2;
-
-            let ltT = demChuoiLienTiep(chuoiStr, "T");
-            let ltX = demChuoiLienTiep(chuoiStr, "X");
-            if (ltT >= 3) diemTai += Math.pow(2, ltT - 2);
-            if (ltX >= 3) diemXiu += Math.pow(2, ltX - 2);
-
             diemTai += percTai / 10;
             diemXiu += percXiu / 10;
-
-            if (chuoiStr.length >= 6) {
-                let recentPatterns = [];
-                for(let i=0; i <= chuoiStr.length - 3; i++) recentPatterns.push(chuoiStr.substring(i, i+3));
-                let countPT = recentPatterns.filter(p => (p.split("T").length - 1) >= 2).length;
-                let countPX = recentPatterns.filter(p => (p.split("X").length - 1) >= 2).length;
-                if (countPT > countPX + 2) diemTai += 3;
-                else if (countPX > countPT + 2) diemXiu += 3;
-            }
-
-            if (ltT >= 3) diemXiu += ltT;
-            else if (ltX >= 3) diemTai += ltX;
-
-            if (chuoiStr.length >= 8) {
-                let last4 = chuoiStr.slice(-4);
-                if (last4.slice(0,2) === last4.slice(2,4)) {
-                    if (last4.slice(-1) === "T") diemTai += 2.5;
-                    else diemXiu += 2.5;
-                }
-            }
-
-            let chenh = Math.abs(percTai - percXiu);
-            if (chenh < 3) {
-                if (chuoiStr.slice(-1) === "T") diemXiu += 2;
-                else diemTai += 2;
-            }
 
             if (diemTai > diemXiu + 1) return ["Tài", percTai, percXiu];
             else if (diemXiu > diemTai + 1) return ["Xỉu", percTai, percXiu];
             return ["Không rõ", percTai, percXiu];
         }
 
+        // --- XÚC XẮC & TỔNG HỢP GỐC ---
         function duDoanTuXucXac(x1, x2, x3) {
             let tong = x1 + x2 + x3;
             if (tong >= 11 && tong <= 17) return ["Tài", tong];
@@ -395,7 +399,6 @@
             if (p >= 60) return 60;
             return 50;
         }
-
         function cleanKq(kq) {
             if (!kq) return null;
             if (kq.startsWith("Tài")) return "Tài";
@@ -403,7 +406,7 @@
             return null;
         }
 
-        // --- MAIN LOGIC CHẠY TRÊN GIAO DIỆN ---
+        // --- UI RENDER & TRACKING ---
         let currentLoiChuoi = null, currentNguongChuoi = null, currentIsChuoiDacCach = false;
         let currentLoiTh = null, currentNguongTh = null, currentIsThDacCach = false;
         let currentChotDanh = null;
@@ -436,7 +439,7 @@
             currentIsChuoiDacCach = false; currentIsThDacCach = false;
             let kqChuoiHienThi = kqChuoiGoc;
             
-            // XỬ LÝ LÕI CHUỖI
+            // XỬ LÝ LÕI CHUỖI VỚI NGƯỠNG BẺ CẦU = 4 (Giữ nguyên theo yêu cầu)
             currentLoiChuoi = cleanKq(kqChuoiGoc);
             currentNguongChuoi = currentLoiChuoi ? layNguong(Math.max(pt, px)) : null;
             
@@ -454,7 +457,7 @@
                 }
             }
 
-            // XỬ LÝ LÕI TỔNG HỢP
+            // XỬ LÝ LÕI TỔNG HỢP VỚI NGƯỠNG BẺ CẦU = 4
             currentLoiTh = cleanKq(kqTongHopGoc);
             currentNguongTh = currentNguongChuoi;
             currentChotDanh = kqTongHopGoc;
@@ -487,19 +490,12 @@
             document.getElementById("tracking-controls").style.display = "flex";
         }
 
-        // --- TRACKING KẾT QUẢ VÀ TỰ ĐỘNG ĐẨY CHUỖI ---
         function capNhatKetQua(phanHoi) {
-            if (phanHoi === 'b') {
-                resetGiaoDien(); return;
-            }
-
+            if (phanHoi === 'b') { resetGiaoDien(); return; }
             let chotClean = cleanKq(currentChotDanh);
             if (!chotClean) { resetGiaoDien(); return; }
 
-            // 1. Xác định kết quả thực tế về gì dựa trên nút bấm (Đúng/Sai)
             let thucTe = (phanHoi === 'd') ? chotClean : (chotClean === "Tài" ? "Xỉu" : "Tài");
-
-            // 2. Tự động cập nhật chuỗi vào ô Input
             let inputChuoi = document.getElementById("input-chuoi");
             let chuoiHienTai = inputChuoi.value.trim().toUpperCase();
             
@@ -509,7 +505,6 @@
                 inputChuoi.value = chuoiMoi;
             }
 
-            // 3. Cập nhật logic bẻ cầu
             if (currentLoiChuoi) {
                 let dC = boDemSai.Chuoi[currentLoiChuoi][currentNguongChuoi];
                 if (currentLoiChuoi === thucTe) {
