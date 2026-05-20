@@ -505,7 +505,6 @@
             return ["Không rõ", percTai, percXiu];
         }
 
-        // --- ĐÃ THAY LOGIC DỰ ĐOÁN XÚC XẮC MỚI TỪ OKMO.PY ---
         function duDoanTuXucXac(x1, x2, x3) {
             const bangNha = {1: 5, 2: 4, 3: 6, 4: 2, 5: 1, 6: 3};
             const xucXacGoc = [x1, x2, x3];
@@ -547,9 +546,12 @@
             }
 
             let ketQua = "Không rõ";
-            if (kqChuoi === kqXx && kqChuoi !== "Không rõ") ketQua = kqChuoi;
-            else if (kqChuoi !== "Không rõ" && kqXx === "Không rõ") ketQua = kqChuoi;
-            else if (kqChuoi === "Không rõ" && kqXx !== "Không rõ") ketQua = kqXx;
+            if (kqChuoi !== "Không rõ") {
+                ketQua = kqChuoi; 
+            } else if (kqXx !== "Không rõ") {
+                ketQua = kqXx;
+            }
+            
             return { ket_qua: ketQua, phan_tich_chuoi: [kqChuoi, pt, px], phan_tich_xuc_xac: [kqXx, tongXx] };
         }
 
@@ -604,7 +606,7 @@
             currentNguongChuoi = currentLoiChuoi ? layNguong(Math.max(pt, px)) : null;
             if (currentLoiChuoi && currentNguongChuoi) {
                 let dataC = boDemSai.Chuoi[currentLoiChuoi][currentNguongChuoi];
-                if (dataC.sai >= 4) { 
+                if (dataC.sai >= 1) { 
                     if (dataC.dac_cach === 1) {
                         currentIsChuoiDacCach = true;
                         dataC.dac_cach = 0;
@@ -623,7 +625,7 @@
 
             if (currentLoiTh && currentNguongTh) {
                 let dataT = boDemSai.TongHop[currentLoiTh][currentNguongTh];
-                if (dataT.sai >= 4) { 
+                if (dataT.sai >= 1) { 
                     if (dataT.dac_cach === 1) {
                         currentIsThDacCach = true;
                         dataT.dac_cach = 0;
@@ -669,7 +671,7 @@
             if (currentLoiChuoi) {
                 let dC = boDemSai.Chuoi[currentLoiChuoi][currentNguongChuoi];
                 if (currentLoiChuoi === thucTe) {
-                    if (dC.sai >= 4 && !currentIsChuoiDacCach) dC.dac_cach = 1;
+                    if (dC.sai >= 1 && !currentIsChuoiDacCach) dC.dac_cach = 1;
                 } else {
                     dC.sai += 1;
                     dC.dac_cach = 0;
@@ -679,7 +681,7 @@
             if (currentLoiTh) {
                 let dT = boDemSai.TongHop[currentLoiTh][currentNguongTh];
                 if (currentLoiTh === thucTe) {
-                    if (dT.sai >= 4 && !currentIsThDacCach) dT.dac_cach = 1;
+                    if (dT.sai >= 1 && !currentIsThDacCach) dT.dac_cach = 1;
                 } else {
                     dT.sai += 1;
                     dT.dac_cach = 0;
